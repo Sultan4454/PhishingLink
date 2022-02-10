@@ -7,6 +7,20 @@ def faviconfinder(url2):
         favIcon = favicon.get(url2)
         Icon = favIcon[0]
         print(Icon.url)
+        IconDomain = getDomain(Icon.url)
+        urldomain = getDomain(url2)
+        if IconDomain == urldomain:
+            return 1
+        else:
+            return -1
+    except:
+        return 'The fav doesnt exist'
+
+def faviconfinder(url2):
+    try:
+        favIcon = favicon.get(url2)
+        Icon = favIcon[0]
+        print(Icon.url)
         return 1
     except:
         return 0
@@ -30,7 +44,6 @@ def fav3(url):
     icon = urllib.urlopen(icon_link['href'])
     with open("test.ico", "wb") as f:
         f.write(icon.read())
-
 
 
 # Python code for simple port scanning
