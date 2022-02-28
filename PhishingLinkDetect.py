@@ -26,10 +26,10 @@ import ssl, socket
 from tld import get_tld
 from flask_cors import CORS
 
-
 app = Flask(__name__)
 CORS(app)
 
+Ipaddr = ''
 havingIp = ''
 Length = ''
 shortning_service = ''
@@ -50,7 +50,7 @@ mouseover = ''
 rightclick = ''
 popup = ''
 Iframe = ''
-agedomain = ''
+agedomain = 'Couldn\'t get Age Domain'
 dnsrec = ''
 traffic = ''
 Rank = ''
@@ -76,7 +76,9 @@ def getonlyDomain(url):
 
 def GetIp(domain):
     try:
+        global Ipaddr
         Ip = socket.gethostbyname(domain)
+        Ipaddr = Ip
         print(Ip)
         return 1
     except:
@@ -190,11 +192,11 @@ def prefixSuffix(url):
     if '-' in urlparse(url).netloc:
         preffix_suffix = '- found in Url'
         print('- found in Url')
-        return -1  # phishing
+        return -1
     else:
         preffix_suffix = 'No - found in Url'
         print('No - found in Url')
-        return 1  # legitimate
+        return 1
 
 
 # 7. Having_sub_domain
@@ -216,7 +218,7 @@ def subdomain(url):
 
 
 # 8. SSlfinal_State
-listofissuers = ['GeoTrust, GoDaddy, Network Solutions, Thawte, Comodo, Doster, VeriSign, GTS CA 1C3']
+listofissuers = ['GeoTrust', 'GoDaddy', 'Network Solutions', 'Thawte', 'Comodo', 'Doster', 'VeriSign', 'Let\'s Encrypt', 'R3', 'Go Daddy Secure Certificate Authority - G2', 'GTS CA 1C3']
 
 
 def final_state(url):
@@ -235,10 +237,8 @@ def final_state(url):
         for issuers in listofissuers:
             if issuers == issued_by:
                 ssl_finalstate = issued_by
-                print('issuer from list')
-                print(issued_by)
+                print('Issuer from list')
                 return 1
-
         else:
             ssl_finalstate = 'The issuer is not a trusted one'
             print('The issuer is not from the list')
@@ -262,7 +262,7 @@ def Registration_length(domain):
             time_difference = relativedelta(expirationdate[0], creationdate[0]).years
             registration_length = 'The Domain Registration Length is ' + str(time_difference) + ' years'
             print('The Domain Registration Length is ' + str(time_difference) + ' years')
-            if time_difference < 1:
+            if time_difference <= 1:
                 return -1
             else:
                 return 1
@@ -273,7 +273,7 @@ def Registration_length(domain):
             time_difference = relativedelta(expirationdate, creationdate[0]).years
             registration_length = 'The Domain Registration Length is ' + str(time_difference) + ' years'
             print('The Domain Registration Length is ' + str(time_difference) + ' years')
-            if time_difference < 1:
+            if time_difference <= 1:
                 return -1
             else:
                 return 1
@@ -284,7 +284,7 @@ def Registration_length(domain):
             time_difference = relativedelta(expirationdate[0], creationdate).years
             registration_length = 'The Domain Registration Length is ' + str(time_difference) + ' years'
             print('The Domain Registration Length is ' + str(time_difference) + ' years')
-            if time_difference < 1:
+            if time_difference <= 1:
                 return -1
             else:
                 return 1
@@ -295,7 +295,7 @@ def Registration_length(domain):
             time_difference = relativedelta(expirationdate, creationdate).years
             registration_length = 'The Domain Registration Length is ' + str(time_difference) + ' years'
             print('The Domain Registration Length is ' + str(time_difference) + ' years')
-            if time_difference < 1:
+            if time_difference <= 1:
                 return -1
             else:
                 return 1
@@ -342,42 +342,44 @@ def faviconM(scrapeddata, domain):
         else:
             faviconico = 'Has no favicon'
             print('Has no favicon')
+            return -1
 
 
 # 11. port
 listofports = (21, 22, 23, 80, 443, 445, 1433, 1521, 3306, 3309)
 returnedlist = []
-listforchecking = (0, 0, 0, 1, 1, 0, 0, 0, 0, 0)
+listforchecking = [0, 0, 0, 1, 1, 0, 0, 0, 0, 0]
 
 
 def port(domain):
     global Port
+    hostip = socket.gethostbyname(domain)
     try:
-        hostip = socket.gethostbyname(domain)
         for ports in listofports:
             a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
             location = (hostip, ports)
             result_of_check = a_socket.connect_ex(location)
 
             if result_of_check == 0:
                 print("Port " + str(ports) + " is open")
-                a_socket.close()
                 returnedlist.append(1)
+                a_socket.close()
             else:
                 print("Port " + str(ports) + " is not open")
-                a_socket.close()
                 returnedlist.append(0)
+                a_socket.close()
 
+        # print('This is a returned list' + str(returnedlist))
         if returnedlist == listforchecking:
             Port = 'The ports that are expected to be closed are closed'
-            # print(returnedlist)
+            print('The ports that are expected to be closed are closed')
             return 1
         else:
             Port = 'The ports that are expected to be closed are open'
-            print(returnedlist)
+            print('The ports that are expected to be closed are open')
             return -1
     except:
+        Port = 'Can\'t get the ports'
         return -1
 
 
@@ -401,7 +403,6 @@ def request_url(scrapeddata, domain):
     Imgpercentage = 0.0
     embedpercentage = 0.0
     sourcepercentage = 0.0
-    # print(soup)
 
     imgtags = soup.find_all('img')
     if len(imgtags) <= 0:
@@ -435,18 +436,13 @@ def request_url(scrapeddata, domain):
         for embed in embedtags:
             embedcount += 1
             src = embed.get('src')
-            # print(src)
             if src is not None:
                 emtagdomain = getDomain(src)
-                # print(domain)
-                # print(emtagdomain)
                 if emtagdomain == domain:
                     print('Embed tag has the source domain same as Url domain - request_url')
                 else:
                     s = s + 1
 
-        # print(s)
-        # print(embedcount)
         if s != 0:
             embedpercentage = s / embedcount * 100
         else:
@@ -462,11 +458,8 @@ def request_url(scrapeddata, domain):
         for source in sources:
             sourcescount += 1
             sourcesrc = source.get('srcset')
-            # print(sourcesrc)
             if sourcesrc is not None:
                 sourtagsource = getDomain(sourcesrc)
-                # print(domain)
-                # print(sourtagsource)
                 if sourtagsource == domain:
                     print('Source tag has the source domain same as Url domain - request_url')
                 else:
@@ -489,6 +482,7 @@ def request_url(scrapeddata, domain):
             else:
                 return -1
     else:
+        print('The percentage of link with outer domain is : 0.0 percentage')
         return 1
 
 
@@ -499,14 +493,15 @@ def url_of_anchor(scrappedata):
     anchor = soup.find_all('a')
 
     if anchor is not None:
-        try:
             linkcount = 0
             voidlinkcount = 0
             for link in anchor:
                 linkcount += 1
-                if ('javascript:void(0)' in link.get('href')):
-                    print('javascript:void(0) anchor - url-of-anchor')
-                    voidlinkcount += 1
+                href = link.get('href')
+                if href is not None:
+                    if ('javascript:void(0)' in link.get('href')):
+                        print('javascript:void(0) anchor - url-of-anchor')
+                        voidlinkcount += 1
 
             if voidlinkcount != 0:
                 voidpercentage = voidlinkcount / linkcount * 100
@@ -517,9 +512,11 @@ def url_of_anchor(scrappedata):
             hashlinkcount = 0
             for link in anchor:
                 count += 1
-                if ('#' in link.get('href')):
-                    print('#anchor - url-of-anchor')
-                    hashlinkcount += 1
+                href = link.get('href')
+                if href is not None:
+                    if ('#' in link.get('href')):
+                        print('#anchor - url-of-anchor')
+                        hashlinkcount += 1
 
             if hashlinkcount != 0:
                 hashpercentage = hashlinkcount / linkcount * 100
@@ -539,9 +536,10 @@ def url_of_anchor(scrappedata):
             else:
                 emptypercentage = 0.0
 
+
             if (emptypercentage + hashpercentage + emptypercentage) > 0.0:
                 final_percentage = (emptypercentage + hashpercentage + voidpercentage) / 300 * 100
-                print('The percentage of link with outer domain is : ' + str(final_percentage))
+                print('The final percentage of empty links is ' + str(final_percentage))
                 if final_percentage < 31.0:
                     print(1)
                     return 1
@@ -553,10 +551,8 @@ def url_of_anchor(scrappedata):
                         # print(-1)
                         return -1
             else:
-                print(1)
+                print('The final percentage of empty links is 0.0 percentage - urlofanchor')
                 return 1
-        except:
-            return -1
     else:
         return -1
 
@@ -582,7 +578,7 @@ def links_in_tags(scrappeddata, domain):
     if metaoutdomain != 0:
         metapercentage = metaoutdomain / metatagcounts * 100
     else:
-        metapercentage = 0
+        metapercentage = 0.0
 
     scripts = soup.find_all('script')
 
@@ -594,21 +590,15 @@ def links_in_tags(scrappeddata, domain):
             if 'http' in scontent:
                 scripttagcounts += 1
                 scriptdomain = getDomain(scontent)
-                # print(scontent)
                 if scriptdomain == domain:
-                    # print(met)
                     print('Script tag has the source domain same as Url domain')
                 else:
                     scriptsoutdomain += 1
 
-    # print(scriptsoutdomain)
-    # print(scripttagcounts)
     if scriptsoutdomain != 0:
         scriptpercentage = scriptsoutdomain / scripttagcounts * 100
-        # print(metapercentage)
     else:
-        scriptpercentage = 0
-        # print(metapercentage)
+        scriptpercentage = 0.0
 
     links = soup.find_all('link')
 
@@ -616,14 +606,11 @@ def links_in_tags(scrappeddata, domain):
     linktagcounts = 0
     for link in links:
         lcontent = link.get('href')
-        # print(lcontent)
         if lcontent is not None:
             if 'http' in lcontent:
                 linktagcounts += 1
                 scriptdomain = getDomain(lcontent)
-                # print(lcontent)
                 if scriptdomain == domain:
-                    # print(met)
                     print('Link tag has the href domain same as Url domain')
                 else:
                     linksoutdomain += 1
@@ -631,7 +618,7 @@ def links_in_tags(scrappeddata, domain):
     if linksoutdomain != 0:
         linkpercentage = linksoutdomain / linktagcounts * 100
     else:
-        linkpercentage = 0
+        linkpercentage = 0.0
 
     if (metapercentage + scriptpercentage + linkpercentage) > 0.0:
         final_percentage = (metapercentage + scriptpercentage + linkpercentage) * 100 / 300
@@ -645,6 +632,7 @@ def links_in_tags(scrappeddata, domain):
             else:
                 return -1
     else:
+        print('The percentage of link with outer domain is : 0.0 percentage - linksintags')
         return 1
 
 
@@ -674,7 +662,7 @@ def sfh(scrappeddata, domain):
                     print('Form Submitting to different domain - sfh')
                     return 0
     else:
-        Sfh = 'Form Submitting to different domain - sfh'
+        Sfh = 'No perfect url found, all with /'
         print('No perfect url found, all with /')
         return 1
 
@@ -706,7 +694,6 @@ def submittingtoemail(getsrapedata):
 def abnormalurl(url):
     global Abnormalurl
     host_name = urlparse(url).hostname
-    print(host_name)
     if validators.domain(host_name):
         Abnormalurl = 'Valid Host name'
         print('Valid Host name')
@@ -752,13 +739,13 @@ def mouseOver(response):
 def rightClick(response):
     global rightclick
     if re.findall(r"event.button ?== ?2", response.text):
-        rightclick = 'Right Click is enabled'
-        print('Right Click is enabled')
-        return 1
-    else:
         rightclick = 'Right Click is disabled'
         print('Right Click is disabled')
         return -1
+    else:
+        rightclick = 'Right Click is enabled'
+        print('Right Click is enabled')
+        return 1
 
 
 # 22. Pop Up window
@@ -800,31 +787,37 @@ def iframe(response):
 
 
 # 24.Survival time of domain: The difference between termination time and creation time (Domain_Age)
-def domainAge(domain_name):
+def domainEnd(domain_name):
     global agedomain
-    creation_date = domain_name.creation_date
     expiration_date = domain_name.expiration_date
-    if (isinstance(creation_date, str) or isinstance(expiration_date, str)):
+    if isinstance(expiration_date, str):
         try:
-            creation_date = datetime.strptime(creation_date, '%Y-%m-%d')
-            expiration_date = datetime.strptime(expiration_date, "%Y-%m-%d")
+          expiration_date = datetime.strptime(expiration_date, "%Y-%m-%d")
         except:
-            return 1
-    if ((expiration_date is None) or (creation_date is None)):
-        return 1
-    elif ((type(expiration_date) is list) or (type(creation_date) is list)):
-        return 1
+            print('Can\'t get the months left for the domain to expire')
+            agedomain = 'Can\'t get the months left for the domain to expire'
+            return -1
+
+    if (expiration_date is None):
+        print('Expiration date is None')
+        return -1
+    elif (type(expiration_date) is list):
+        print('Expiration date is a list')
+        return -1
     else:
-        ageofdomain = abs((expiration_date - creation_date).days)
-        if ((ageofdomain / 30) <= 6):
-            agedomain = 'The website is live from more than 6 months'
-            print('The website is live from more than 6 months')
-            age = 1
+        today = datetime.now()
+        end = abs((expiration_date - today).days)
+        monthstoend = end / 30
+        if ((end/30) >= 6):
+          end = 1
+          print('The domain is live for' + str(monthstoend) + ' months')
+          agedomain = 'The domain is live for ' + str(monthstoend) + ' months'
         else:
-            agedomain = 'The website is live from less than 6 months'
-            print('The website is live from less than 6 months')
-            age = -1
-    return age
+            print('The domain is live for ' + str(monthstoend) + ' months')
+            agedomain = 'The domain is live for ' + str(monthstoend) + ' months'
+            end = -1
+
+    return end
 
 
 # 25. DNS Record
@@ -845,20 +838,23 @@ def web_traffic(url):
     try:
         # Filling the whitespaces in the URL if any
         url = urllib.parse.quote(url)
-        rank = \
-            BeautifulSoup(urllib.request.urlopen("http://data.alexa.com/data?cli=10&dat=s&url=" + url).read(),
-                          "xml").find("REACH")['RANK']
+        rank = BeautifulSoup(urllib.request.urlopen("http://data.alexa.com/data?cli=10&dat=s&url=" + url).read(), "xml").find("REACH")['RANK']
         rank = int(rank)
     except TypeError:
         return 1
     if rank < 100000:
-        traffic = 'Website Traffic is ' + str(rank)
-        print('Website Traffic is ' + str(rank))
+        traffic = 'Website Rank on Alexa top 10 Million is ' + str(rank)
+        print('Website Rank on Alexa top 10 Million is ' + str(rank))
         return 1
     else:
-        traffic = 'Website Traffic is ' + str(rank)
-        print('Website Traffic is ' + str(rank))
-        return 0
+        if rank > 100000:
+            traffic = 'Website Rank on Alexa top 10 Million is ' + str(rank)
+            print('Website Rank on Alexa top 10 Million is ' + str(rank))
+            return 0
+        else:
+            traffic = 'Website Rank on Alexa top 10 Million is ' + str(rank)
+            print('Website Rank on Alexa top 10 Million is ' + str(rank))
+            return -1
 
 
 # 27. Page_Rank
@@ -918,16 +914,17 @@ def Page_Rank(url):
 # 29. Links_pointing_to_page
 def Linkspointing(scrapeddata, domain):
     global linkspointing
-    try:
-        soup = scrapeddata
-        r = 0
-        for link in soup.find_all('a'):
+    soup = scrapeddata
+    r = 0
+    anchors = soup.find_all('a')
+    if anchors is not None:
+        for link in anchors:
             temp = link.get('href')
             if temp is not None and domain in temp:
                 print(temp)
                 r = r + 1
 
-        linkspointing = ("Total links pointing to same domain = " + str(r))
+        linkspointing = "".join(["Total links pointing to same domain = ", str(r)])
         print("Total links pointing to same domain = ", r)
         if r == 0:
             return -1
@@ -936,9 +933,8 @@ def Linkspointing(scrapeddata, domain):
                 return 0
             else:
                 return 1
-    except:
+    else:
         return -1
-
 
 # 30. Statistical_report
 def stats_report(url, domain):
@@ -997,112 +993,127 @@ def hello_world():
 def call_regex():
     websiteUrl = request.args.get('webUrl')
     # websiteUrl = url
-    domain = getDomain(websiteUrl)
-    ip = GetIp(domain)
-    wp = ''
-    pif = ''
-    if ip == -1:
-        print('The Website with this domain doesnt exist')
-        wp = 'The Website with this domain doesnt exist'
-        return wp
-
-    stats = stats_report('https://phishtank.org', domain)
-    if stats == -1:
-        pif = 'Website present on PhishTank.org'
-        return pif
-
-    scrapedata = getscarpdata(websiteUrl)
-    feature1 = havingIP(websiteUrl)
-    feature2 = getLength(websiteUrl)
-    feature3 = tinyURL(websiteUrl)
-    feature4 = haveAtSign(websiteUrl)
-    feature5 = redirection(websiteUrl)
-    feature6 = prefixSuffix(websiteUrl)
-    feature7 = subdomain(domain)
-    feature8 = final_state(websiteUrl)              # SSlfinal_State
-    feature9 = Registration_length(domain)          # Domain_registeration_length
-    feature10 = faviconM(scrapedata, domain)        # Favicon
-    feature11 = port(domain)                        # Port
-    feature12 = httpDomain(websiteUrl)              # HTTPS_token
-    feature13 = request_url(scrapedata, domain)     # Request_URL
-    feature14 = url_of_anchor(scrapedata)           # URL_of_Anchor
-    feature15 = links_in_tags(scrapedata, domain)   # Links_in_tags
-    feature16 = sfh(scrapedata, domain)             # SFH
-    feature17 = submittingtoemail(scrapedata)       # Submitting_to_email
-    feature18 = abnormalurl(websiteUrl)             # Abnormal_URL
-
     try:
-        response = requests.get(websiteUrl)
+        domain = getDomain(websiteUrl)
+        ip = GetIp(domain)
+        wp = ''
+        pif = ''
+        if ip == -1:
+            print('The Website with this domain doesnt exist')
+            wp = 'The Website with this domain doesnt exist'
+            error = {
+                'wp': wp
+            }
+            return jsonify(error)
+
+        # stats = stats_report('https://phishtank.org', domain)
+        # if stats == -1:
+        #     pif = 'Website present on PhishTank.org'
+        #     onphishtank = {
+        #         'phishtank': pif
+        #     }
+        #     return jsonify(onphishtank)
+
+        scrapedata = getscarpdata(websiteUrl)
+        feature1 = havingIP(websiteUrl)
+        feature2 = getLength(websiteUrl)
+        feature3 = tinyURL(websiteUrl)
+        feature4 = haveAtSign(websiteUrl)
+        feature5 = redirection(websiteUrl)
+        feature6 = prefixSuffix(websiteUrl)
+        feature7 = subdomain(domain)
+        feature8 = final_state(websiteUrl)              # SSlfinal_State
+        feature9 = Registration_length(domain)          # Domain_registeration_length
+        feature10 = faviconM(scrapedata, domain)        # Favicon
+        feature11 = port(domain)                        # Port
+        feature12 = httpDomain(websiteUrl)              # HTTPS_token
+        feature13 = request_url(scrapedata, domain)     # Request_URL
+        feature14 = url_of_anchor(scrapedata)           # URL_of_Anchor
+        feature15 = links_in_tags(scrapedata, domain)   # Links_in_tags
+        feature16 = sfh(scrapedata, domain)             # SFH
+        feature17 = submittingtoemail(scrapedata)       # Submitting_to_email
+        feature18 = abnormalurl(websiteUrl)             # Abnormal_URL
+
+        try:
+            response = requests.get(websiteUrl)
+        except:
+            response = ""
+
+        if response == '':
+            print('We got a bad request for the url passed, the website may be down please Try later')
+            return 1
+
+        feature19 = forwarding(response)
+        feature20 = mouseOver(response)
+        feature21 = rightClick(response)
+        feature22 = popupwindow(scrapedata)             # popUpWindow
+        feature23 = iframe(response)
+
+        domain_present = 1
+        try:
+            domain_name = whois.whois(urlparse(websiteUrl).netloc)
+        except:
+            domain_present = -1
+
+        feature24 = (-1 if domain_present == -1 else domainEnd(domain_name))  # DomainAge
+        feature25 = 1  # DNSRecord
+        feature26 = web_traffic(websiteUrl)
+        feature27 = Page_Rank(websiteUrl)
+        feature28 = 1 if feature27 != -1 else -1
+        feature29 = Linkspointing(scrapedata, domain)
+        feature30 = -1
+
+        featuretocheck = [feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9,
+                          feature10, feature11, feature12, feature13, feature14, feature15, feature16, feature17, feature18,
+                          feature19, feature20, feature21, feature22, feature23, feature24, feature25, feature26, feature27,
+                          feature28, feature29, feature30]
+
+        print(featuretocheck)
+        prediction = model.predict([featuretocheck])
+        predstr = np.array_str(prediction)
+        print(predstr)
+        urldata = {
+            'Url': websiteUrl,
+            'Ipaddr': Ipaddr,
+            'IP': havingIp,
+            'Length': Length,
+            'SS': shortning_service,
+            'At': At_symbol,
+            'Redirection': redirectingg,
+            'Preffix_Suffix': preffix_suffix,
+            'having_subdomain': having_subdomain,
+            'ssl_finalstate': ssl_finalstate,
+            'registration_length': registration_length,
+            'faviconico': faviconico,
+            'port': Port,
+            'https': https,
+            'Sfh': Sfh,
+            'emailsubmission': emailsubmission,
+            'abnormalurl': Abnormalurl,
+            'forward': forward,
+            'mouseover': mouseover,
+            'rightclick': rightclick,
+            'popup': popup,
+            'Iframe': Iframe,
+            'agedomain': agedomain,
+            'dnsrec': 'Dns Record Present',
+            'traffic': traffic,
+            'Rank': Rank,
+            'linkspointing': linkspointing,
+            'Stats': Stats,
+            'FinalResult': predstr,
+            'Phish': 'Not a Phish' if prediction == 1 else 'Is a Phish'
+        }
+        # print(data)
+        return jsonify(urldata)
     except:
-        response = ""
-
-    if response == '':
-        print('We got a bad request for the url passed, the website may be down please Try later')
-        return 1
-
-    feature19 = forwarding(response)
-    feature20 = mouseOver(response)
-    feature21 = rightClick(response)
-    feature22 = popupwindow(scrapedata)             # popUpWindow
-    feature23 = iframe(response)
-
-    domain_present = 1
-    try:
-        domain_name = whois.whois(urlparse(websiteUrl).netloc)
-    except:
-        domain_present = -1
-
-    feature24 = (-1 if domain_present == -1 else domainAge(domain_name))  # DomainAge
-    feature25 = 1  # DNSRecord
-    feature26 = web_traffic(websiteUrl)
-    feature27 = Page_Rank(websiteUrl)
-    feature28 = 1 if feature27 != -1 else -1
-    feature29 = Linkspointing(websiteUrl, domain)
-    feature30 = 1
-
-    featuretocheck = [feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9,
-                      feature10, feature11, feature12, feature13, feature14, feature15, feature16, feature17, feature18,
-                      feature19, feature20, feature21, feature22, feature23, feature24, feature25, feature26, feature27,
-                      feature28, feature29, feature30]
-
-    print(featuretocheck)
-    prediction = model.predict([featuretocheck])
-    predstr = np.array_str(prediction)
-    print(predstr)
-    data = {
-        'IP': havingIp,
-        'Length': Length,
-        'SS': shortning_service,
-        'At': At_symbol,
-        'Redirection': redirectingg,
-        'Preffix_Suffix': preffix_suffix,
-        'having_subdomain': having_subdomain,
-        'ssl_finalstate': ssl_finalstate,
-        'registration_length': registration_length,
-        'faviconico': faviconico,
-        'port': Port,
-        'https': https,
-        'Sfh': Sfh,
-        'emailsubmission': emailsubmission,
-        'abnormalurl': Abnormalurl,
-        'forward': forward,
-        'mouseover': mouseover,
-        'rightclick': rightclick,
-        'popup': popup,
-        'Iframe': Iframe,
-        'agedomain': agedomain,
-        'dnsrec': 'Dns Record Present',
-        'traffic': traffic,
-        'Rank': Rank,
-        'linkspointing': linkspointing,
-        'Stats': Stats,
-        'FinalResult': predstr,
-        'Phish': 'Not a Phish' if prediction == 1 else 'Is a Phish'
-    }
-    # print(data)
-    return jsonify(data)
+        errordata = {
+            'error': 'The website refused to connect'
+        }
+        return jsonify(errordata)
 
 # call_regex(input('Enter the Url you wanna check :'))
+
 
 if __name__ == "__main__":
     app.run()
