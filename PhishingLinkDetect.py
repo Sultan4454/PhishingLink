@@ -25,6 +25,7 @@ from dateutil.relativedelta import relativedelta
 import ssl, socket
 from tld import get_tld
 from flask_cors import CORS
+import asyncio
 
 app = Flask(__name__)
 CORS(app)
@@ -112,16 +113,16 @@ def getLength(url):
     global Length
     if len(url) < 54:
         length = 1
-        Length = 'Length of the url is ' + str(len(url)) + ' characters'
+        Length = str(len(url))
         print('Length of the url is ' + str(len(url)) + ' characters')
     else:
         if len(url) >= 54 and len(url) <= 75:
             length = 0
-            Length = 'Length of the url is ' + str(len(url)) + ' characters'
+            Length = str(len(url))
             print('Length of the url is ' + str(len(url)) + ' characters')
         else:
             length = -1
-            Length = 'Length of the url is ' + str(len(url)) + ' characters'
+            Length = str(len(url))
             print('Length of the url is ' + str(len(url)) + ' characters')
 
     return length
@@ -237,11 +238,11 @@ def final_state(url):
         for issuers in listofissuers:
             if issuers == issued_by:
                 ssl_finalstate = issued_by
-                print('Issuer from list')
+                print('SSl Certificate issued by ' + str(issued_by))
                 return 1
         else:
-            ssl_finalstate = 'The issuer is not a trusted one'
-            print('The issuer is not from the list')
+            ssl_finalstate = 'SSl Certificate issued by' + str(issued_by)
+            print('SSl Certificate issued by ' + str(issued_by))
             return 0
     except:
         ssl_finalstate = 'Unable to get SSl Issuer name - final_state'
@@ -260,7 +261,7 @@ def Registration_length(domain):
             print('The domain of the website was bought on ' + str(creationdate[0]))
             print('The domain of the website will expire on ' + str(expirationdate[0]))
             time_difference = relativedelta(expirationdate[0], creationdate[0]).years
-            registration_length = 'The Domain Registration Length is ' + str(time_difference) + ' years'
+            registration_length = str(time_difference)
             print('The Domain Registration Length is ' + str(time_difference) + ' years')
             if time_difference <= 1:
                 return -1
@@ -271,7 +272,7 @@ def Registration_length(domain):
             print('The domain of the website was bought on ' + str(creationdate[0]))
             print('The domain of the website will expire on ' + str(expirationdate))
             time_difference = relativedelta(expirationdate, creationdate[0]).years
-            registration_length = 'The Domain Registration Length is ' + str(time_difference) + ' years'
+            registration_length = str(time_difference)
             print('The Domain Registration Length is ' + str(time_difference) + ' years')
             if time_difference <= 1:
                 return -1
@@ -282,7 +283,7 @@ def Registration_length(domain):
             print('The domain of the website was bought on ' + str(creationdate))
             print('The domain of the website will expire on ' + str(expirationdate[0]))
             time_difference = relativedelta(expirationdate[0], creationdate).years
-            registration_length = 'The Domain Registration Length is ' + str(time_difference) + ' years'
+            registration_length = str(time_difference)
             print('The Domain Registration Length is ' + str(time_difference) + ' years')
             if time_difference <= 1:
                 return -1
@@ -293,7 +294,7 @@ def Registration_length(domain):
             print('The domain of the website was bought on ' + str(creationdate))
             print('The domain of the website will expire on ' + str(expirationdate))
             time_difference = relativedelta(expirationdate, creationdate).years
-            registration_length = 'The Domain Registration Length is ' + str(time_difference) + ' years'
+            registration_length = str(time_difference)
             print('The Domain Registration Length is ' + str(time_difference) + ' years')
             if time_difference <= 1:
                 return -1
@@ -346,9 +347,11 @@ def faviconM(scrapeddata, domain):
 
 
 # 11. port
-listofports = (21, 22, 23, 80, 443, 445, 1433, 1521, 3306, 3309)
+# listofports = (21, 22, 23, 80, 443, 445, 1433, 1521, 3306, 3309)
+listofports = (22, 80, 443)
 returnedlist = []
-listforchecking = [0, 0, 0, 1, 1, 0, 0, 0, 0, 0]
+# listforchecking = [0, 0, 0, 1, 1, 0, 0, 0, 0, 0]
+listforchecking = [0, 1, 1]
 
 
 def port(domain):
@@ -359,7 +362,6 @@ def port(domain):
             a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             location = (hostip, ports)
             result_of_check = a_socket.connect_ex(location)
-
             if result_of_check == 0:
                 print("Port " + str(ports) + " is open")
                 returnedlist.append(1)
@@ -799,10 +801,11 @@ def domainEnd(domain_name):
             return -1
 
     if (expiration_date is None):
+        agedomain = 'No expiration date found'
         print('Expiration date is None')
         return -1
     elif (type(expiration_date) is list):
-        print('Expiration date is a list')
+        print('Found more than 1 Expiration date')
         return -1
     else:
         today = datetime.now()
@@ -810,11 +813,11 @@ def domainEnd(domain_name):
         monthstoend = end / 30
         if ((end/30) >= 6):
           end = 1
-          print('The domain is live for' + str(monthstoend) + ' months')
-          agedomain = 'The domain is live for ' + str(monthstoend) + ' months'
+          print('The domain is live for ' + str(monthstoend) + ' months')
+          agedomain = str(monthstoend)
         else:
             print('The domain is live for ' + str(monthstoend) + ' months')
-            agedomain = 'The domain is live for ' + str(monthstoend) + ' months'
+            agedomain = str(monthstoend)
             end = -1
 
     return end
@@ -843,16 +846,16 @@ def web_traffic(url):
     except TypeError:
         return 1
     if rank < 100000:
-        traffic = 'Website Rank on Alexa top 10 Million is ' + str(rank)
+        traffic = str(rank)
         print('Website Rank on Alexa top 10 Million is ' + str(rank))
         return 1
     else:
         if rank > 100000:
-            traffic = 'Website Rank on Alexa top 10 Million is ' + str(rank)
+            traffic = str(rank)
             print('Website Rank on Alexa top 10 Million is ' + str(rank))
             return 0
         else:
-            traffic = 'Website Rank on Alexa top 10 Million is ' + str(rank)
+            traffic = str(rank)
             print('Website Rank on Alexa top 10 Million is ' + str(rank))
             return -1
 
@@ -869,7 +872,7 @@ def Page_Rank(url):
     # target keywords
     query = getonlyDomain(url)
 
-    passed = 1.1
+    passed = 1.10
     for page in range(1, 11):
         passed -= 0.1
         print("[*] Going for page:", page)
@@ -992,7 +995,6 @@ def hello_world():
 @app.route('/url')
 def call_regex():
     websiteUrl = request.args.get('webUrl')
-    # websiteUrl = url
     try:
         domain = getDomain(websiteUrl)
         ip = GetIp(domain)
@@ -1005,14 +1007,6 @@ def call_regex():
                 'wp': wp
             }
             return jsonify(error)
-
-        # stats = stats_report('https://phishtank.org', domain)
-        # if stats == -1:
-        #     pif = 'Website present on PhishTank.org'
-        #     onphishtank = {
-        #         'phishtank': pif
-        #     }
-        #     return jsonify(onphishtank)
 
         scrapedata = getscarpdata(websiteUrl)
         feature1 = havingIP(websiteUrl)
@@ -1061,7 +1055,7 @@ def call_regex():
         feature27 = Page_Rank(websiteUrl)
         feature28 = 1 if feature27 != -1 else -1
         feature29 = Linkspointing(scrapedata, domain)
-        feature30 = -1
+        feature30 = stats_report(websiteUrl,domain)
 
         featuretocheck = [feature1, feature2, feature3, feature4, feature5, feature6, feature7, feature8, feature9,
                           feature10, feature11, feature12, feature13, feature14, feature15, feature16, feature17, feature18,
@@ -1104,15 +1098,12 @@ def call_regex():
             'FinalResult': predstr,
             'Phish': 'Not a Phish' if prediction == 1 else 'Is a Phish'
         }
-        # print(data)
         return jsonify(urldata)
     except:
         errordata = {
             'error': 'The website refused to connect'
         }
         return jsonify(errordata)
-
-# call_regex(input('Enter the Url you wanna check :'))
 
 
 if __name__ == "__main__":
