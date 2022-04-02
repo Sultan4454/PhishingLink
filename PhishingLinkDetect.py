@@ -966,7 +966,7 @@ def stats_report(url, domain):
 
 # MACHINE LEARNING
 # Reading the files
-df = pd.read_csv('E:\Files\Dataset.csv')
+df = pd.read_csv('Dataset.csv')
 
 # print(df)
 X = df.iloc[:, :-1]
@@ -989,7 +989,7 @@ print("\n\nAccuracy Score:", metrics.accuracy_score(ytest, ypred).round(2) * 100
 
 @app.route('/')
 def hello_world():
-    return 'Hello World'
+    return 'Phishing Link detector | Ubinext'
 
 
 @app.route('/url')
